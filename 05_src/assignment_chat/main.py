@@ -1,15 +1,21 @@
 # main.py
+
 from langgraph.graph import StateGraph, MessagesState, START
 from langchain.chat_models import init_chat_model
 from langgraph.prebuilt.tool_node import ToolNode, tools_condition
 from langchain_core.messages import SystemMessage
 from dotenv import load_dotenv
 import os
+from pathlib import Path
 from utils.logger import get_logger
 
-# Load local environment secrets
-load_dotenv(".env")
-load_dotenv(".secrets")
+# -----------------------------
+# Load environment secrets
+# -----------------------------
+BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(BASE_DIR / ".env")
+load_dotenv(BASE_DIR / ".secrets")
+
 _logs = get_logger(__name__)
 
 # -----------------------------
@@ -17,14 +23,20 @@ _logs = get_logger(__name__)
 # -----------------------------
 api_key = os.getenv("API_GATEWAY_KEY")
 if not api_key:
-    raise RuntimeError("API_GATEWAY_KEY not found in environment. Make sure it is in .secrets")
+    raise RuntimeError(
+        "API_GATEWAY_KEY not found in environment. Make sure it is in .secrets"
+    )
 
 chat_agent = init_chat_model(
-    "openai:gpt-4o-mini",
-    api_key=api_key  # <-- important to avoid 401 errors
+    "gpt-4o-mini",
+    model_provider="openai",
+    base_url="https://k7uffyg03f.execute-api.us-east-1.amazonaws.com/prod/openai/v1",
+    default_headers={"x-api-key": api_key},
 )
 
+# -----------------------------
 # Import tools safely
+# -----------------------------
 try:
     from assignment_chat.tools_animals import get_cat_facts, get_dog_facts
 except Exception:
@@ -56,12 +68,15 @@ try:
 except Exception:
     guardrails = lambda state: state  # no-op fallback
 
-# Respect CHROMA_MODE
-chroma_mode = os.getenv("CHROMA_MODE", "docker")
+# -----------------------------
+# CHROMA_MODE
+# -----------------------------
+chroma_mode = "local"  # Using local embeddings with music_reviews collection
 _logs.info(f"CHROMA_MODE={chroma_mode}")
 
-
-# Add all tools to a list
+# -----------------------------
+# Tools list
+# -----------------------------
 tools = [get_cat_facts, get_dog_facts, recommend_albums, get_horoscope, risk_calculator]
 
 # -----------------------------
@@ -70,7 +85,9 @@ tools = [get_cat_facts, get_dog_facts, recommend_albums, get_horoscope, risk_cal
 def call_model(state: MessagesState):
     """LLM decides whether to call a tool or not"""
     try:
-        response = chat_agent.bind_tools(tools).invoke([SystemMessage(content=instructions)] + state["messages"])
+        response = chat_agent.bind_tools(tools).invoke(
+            [SystemMessage(content=instructions)] + state["messages"]
+        )
         return {"messages": [response]}
     except Exception as e:
         _logs.error(f"LLM call failed: {e}")

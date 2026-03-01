@@ -1,18 +1,30 @@
 # app.py
+import sys
+import os
+from pathlib import Path
+
+
+BASE_DIR = Path(__file__).resolve().parent
+ROOT_DIR = BASE_DIR.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 from assignment_chat.main import get_graph
 from langchain_core.messages import HumanMessage, AIMessage
 import gradio as gr
 from dotenv import load_dotenv
-import os
 from utils.logger import get_logger
 
 _logs = get_logger(__name__)
 
+# -----------------------------
 # Load environment secrets
-load_dotenv(".secrets")
+# -----------------------------
+load_dotenv(BASE_DIR / ".secrets")
+load_dotenv(BASE_DIR / ".env")
 
 # -----------------------------
-# Initialize graph / LLM
+# Initialize LLM graph
 # -----------------------------
 try:
     llm = get_graph()
@@ -21,7 +33,7 @@ except Exception as e:
     llm = None  # fallback to prevent crashes
 
 # -----------------------------
-# Chat callback
+# Chat callback for Gradio
 # -----------------------------
 def course_chat(message: str, history: list[dict] = None) -> str:
     if history is None:
@@ -52,7 +64,7 @@ def course_chat(message: str, history: list[dict] = None) -> str:
         return "Error: could not generate a response."
 
 # -----------------------------
-# Gradio Chat Interface
+# Launch Gradio chat interface
 # -----------------------------
 chat = gr.ChatInterface(fn=course_chat)
 
