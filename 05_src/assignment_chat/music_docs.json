@@ -1,0 +1,34 @@
+[
+  {
+    "id": "1",
+    "artist": "The Midnight Echo",
+    "title": "Neon Horizons",
+    "year": 2020,
+    "score": 8.4,
+    "review": "A shimmering synth-pop journey filled with nostalgic melodies and pulsing rhythms."
+  },
+  {
+    "id": "2",
+    "artist": "Desert Bloom",
+    "title": "Sundown Ritual",
+    "year": 2019,
+    "score": 7.8,
+    "review": "A warm indie-folk album layered with poetic lyrics and acoustic textures."
+  },
+  {
+    "id": "3",
+    "artist": "Static Reverie",
+    "title": "Glass Frequencies",
+    "year": 2021,
+    "score": 8.9,
+    "review": "An experimental electronic record blending glitch beats with haunting vocals."
+  },
+  {
+    "id": "4",
+    "artist": "Velvet Static",
+    "title": "City After Dark",
+    "year": 2018,
+    "score": 6.9,
+    "review": "Moody alternative rock with introspective songwriting and gritty guitar tones."
+  }
+]
